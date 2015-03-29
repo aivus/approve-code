@@ -2,16 +2,19 @@
   "name": "approve-github-pullrequest",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "api/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ilya Antipenko",
   "license": "BSD",
   "dependencies": {
+    "apiapi": "^0.3.2",
+    "bluebird": "^2.9.20",
     "express": "^4.12.2",
     "express-session": "^1.10.3",
-    "github": "^0.2.3",
+    "lodash": "^3.6.0",
+    "session-file-store": "0.0.3",
     "twig": "^0.8.1"
   }
 }

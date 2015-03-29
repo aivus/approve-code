@@ -3,8 +3,8 @@ var configureRoutes = require('./routes');
 var configureMiddleware = require('./middleware');
 
 var app = express();
-configureRoutes(app);
 configureMiddleware(app);
+configureRoutes(app);
 
 app.listen(3000, function() {
     console.log('Started!');

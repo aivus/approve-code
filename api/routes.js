@@ -1,6 +1,9 @@
-var indexController = require('./controllers/index');
+var authController = require('./controllers/auth');
 
 module.exports = function (app) {
-    app.get('/', indexController.index);
-    app.get('/auth/callback', indexController.authCallback);
+    app.get('/', authController.index);
+    app.get('/signin', authController.signin);
+    app.get('/logout', authController.logout);
+    app.get('/auth/callback', authController.authCallback);
+    app.get('/auth/test', authController.test);
 };

@@ -1,40 +1,46 @@
+var Promise = require('bluebird');
+var _ = require('lodash');
 var ghConfig = require('../config/github');
 var crypto = require('crypto');
+var githubLogin = require('./githubApiClient').loginGHApiClient;
+var github = require('./githubApiClient').baseGHApiClient;
 
-function getGHAuthenticateLink() {
-    var state = generateNonce(64);
-    var link = 'https://github.com/login/oauth/authorize'
+function getGHAuthenticateLink(nonce) {
+    return 'https://github.com/login/oauth/authorize'
         + '?client_id=' + ghConfig.client_id
-        + '&scope=user,repo'
-        + '&state=' + state;
-
-    return link;
+        + '&scope=' + ghConfig.scope.join()
+        + '&state=' + nonce;
 }
 
 function generateNonce(length) {
     return crypto.randomBytes(length * 2).toString("hex").slice(0, length);
 }
 
-function getAccessToken () {
-    // TODO: Add session check
-
-    github.authorization.create({
-        scopes: ["user", "repo"],
-        note: "what this auth is for",
-        note_url: "http://url-to-this-auth-app"
-        //,
-        //headers: {
-        //    "X-GitHub-OTP": ""
-        //}
-    }, function(err, res) {
-        if (res && res.token) {
-            return res.token;
+function authorize(req) {
+    return githubLogin.authorize({
+        client_id: ghConfig.client_id,
+        client_secret: ghConfig.client_secret,
+        code: req.query.code
+    }).then(function(body) {
+        // Check on access_token and correct scope
+        if (body.access_token && _.difference(body.scope.split(','), ghConfig.scope).length == 0) {
+            // Store access_token to session
+            req.session.access_token = body.access_token;
+            return Promise.resolve();
+        } else {
+            return Promise.reject();
         }
     });
+}
+
+function isAuthorized(req) {
+    console.log(req.session.access_token);
+    return req.session.access_token;
 }
 
 module.exports = {
     generateNonce: generateNonce,
     getGHAuthenticateLink: getGHAuthenticateLink,
-    getAccessToken: getAccessToken
+    authorize: authorize,
+    isAuthorized: isAuthorized
 };
