@@ -26,7 +26,10 @@ function authorize(req) {
         if (body.access_token && _.difference(body.scope.split(','), ghConfig.scope).length == 0) {
             // Store access_token to session
             req.session.access_token = body.access_token;
-            return Promise.resolve();
+            return getCurrentUser(req).then(function(body) {
+                req.session.user = body;
+                return Promise.resolve();
+            });
         } else {
             return Promise.reject();
         }
@@ -34,8 +37,15 @@ function authorize(req) {
 }
 
 function isAuthorized(req) {
-    console.log(req.session.access_token);
-    return req.session.access_token;
+    return req.session.access_token && req.session.user;
+}
+
+function getCurrentUser(req) {
+    return github.user({
+        access_token: req.session.access_token
+    }).then(function(body) {
+        return Promise.resolve(body);
+    });
 }
 
 module.exports = {

@@ -1,0 +1,14 @@
+{% extends 'index_layout.twig' %}
+{% block content %}
+    {% if user %}
+        <div class="row">
+            <div class="center-block col-md-12">
+                {% for repo in repos %}
+                    <div>
+                        {{ repo.full_name }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -21,7 +21,8 @@ var baseApiClient = new ApiClient({
 
     // Define api methods
     methods: {
-        //authorize: 'post /login/oauth/access_token'
+        user: 'get /user',
+        user_repos: 'get /user/repos'
     },
 
     // Github api requires proper user-agent to work

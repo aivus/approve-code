@@ -1,12 +1,7 @@
 {% extends 'index_layout.twig' %}
 {% block content %}
-    {% if not authorized %}
-    <div class="row">
-        <div class="col-md-4 col-mdr-offset-4">
-            <a class="btn btn-block btn-social btn-lg btn-github" href="/signin">
-                <i class="fa fa-github"></i>Sign in with GitHub
-            </a>
-        </div>
+    <div class="jumbotron">
+        <h3>Approve Code</h3>
+        Approve Code application provide features to approve/reject PR via GitHub statuses API.<br>
     </div>
-    {% endif %}
 {% endblock %}

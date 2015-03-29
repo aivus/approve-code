@@ -12,12 +12,6 @@ module.exports = {
         res.redirect('/');
     },
 
-    index: function (req, res) {
-        res.render('index.twig', {
-            authorized: auth.isAuthorized(req)
-        });
-    },
-
     authCallback: function(req, res) {
         var nonce = req.session.github_nonce;
         if (!req.query.code || req.query.state != nonce) {
@@ -29,9 +23,5 @@ module.exports = {
         auth.authorize(req).done(function(){
             res.redirect('/');
         });
-    },
-
-    test: function (req, res) {
-        res.send(auth.isAuthorized(req) ? 'auth' : 'not auth');
     }
 };
