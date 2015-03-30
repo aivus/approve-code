@@ -1,7 +1,6 @@
 var github = require('./githubApiClient').baseGHApiClient;
 var Promise = require('bluebird');
-var redis = require("then-redis");
-var client = redis.createClient();
+var client = require('../helpers/redisHelper').client;
 
 // Retrieve and return user repos if they doesn't exist
 // If they are exist - return from session
