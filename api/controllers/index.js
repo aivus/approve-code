@@ -1,19 +1,9 @@
-var auth = require('../../services/auth');
-var reposService = require('../../services/repos');
-
+var _ = require('lodash');
 
 module.exports = {
     index: function (req, res) {
-        if (auth.isAuthorized(req)) {
-
-            reposService.getUserRepos(req).then(function(repos) {
-                res.render('repo_list.twig', {
-                    user: JSON.parse(req.session.user),
-                    repos: JSON.parse(repos)
-                });
-            });
-        } else {
-            res.render('index.twig');
-        }
+        res.render('index.twig', {
+            user: _.isUndefined(req.session.user) ? null : JSON.parse(req.session.user)
+        });
     }
 };

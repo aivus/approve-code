@@ -23,5 +23,20 @@ module.exports = {
         auth.authorize(req).done(function(){
             res.redirect('/');
         });
+    },
+
+    /**
+     * Middleware for check user authenticate
+     *
+     * @param req
+     * @param res
+     * @param next
+     */
+    checkAuth: function (req, res, next) {
+        if (auth.isAuthorized(req)) {
+            return next();
+        } else {
+            res.status(403).send('Forbidden');
+        }
     }
 };
