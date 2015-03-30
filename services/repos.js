@@ -12,11 +12,12 @@ function getUserRepos(req, forceUpdate) {
                 access_token: req.session.access_token
             }).then(function(repos) {
                 return client.hset('user:' + req.session.user.id, 'repos', repos).then(function(result) {
+                    console.log('retrieve repos from github');
                     return Promise.resolve(repos);
                 });
             });
         } else {
-            console.log('from the redis');
+            console.log('retrieve repos from redis');
             return client.hget('user:' + req.session.user.id, 'repos').then(function(repos) {
                 return Promise.resolve(repos);
             });
