@@ -2,7 +2,7 @@
   "name": "approve-github-pullrequest",
   "version": "0.0.1",
   "description": "",
-  "main": "api/app.js",
+  "main": "app/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
