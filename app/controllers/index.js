@@ -1,9 +1,12 @@
 var _ = require('lodash');
+var userModel = require('../../models/user');
 
 module.exports = {
     index: function (req, res) {
-        res.render('index.twig', {
-            user: _.isUndefined(req.session.user) ? null : JSON.parse(req.session.user)
+        userModel.getProfile(req.session.user_id).done(function(user) {
+            res.render('index.twig', {
+                user: user
+            });
         });
     }
 };

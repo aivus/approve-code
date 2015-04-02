@@ -20,7 +20,9 @@ module.exports = {
         }
 
         // Trying to authorize
-        auth.authorize(req).done(function(){
+        auth.authorize(req.query.code).then(function (user) {
+            req.session.user_id = user.id;
+        }).done(function(){
             res.redirect('/');
         });
     },
@@ -33,7 +35,7 @@ module.exports = {
      * @param next
      */
     checkAuth: function (req, res, next) {
-        if (auth.isAuthorized(req)) {
+        if (auth.isAuthorized(req.session.user_id)) {
             return next();
         } else {
             res.status(403).send('Forbidden');

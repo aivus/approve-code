@@ -4,6 +4,7 @@ var ghConfig = require('../config/github');
 var crypto = require('crypto');
 var githubLogin = require('./githubApiClient').loginGHApiClient;
 var github = require('./githubApiClient').baseGHApiClient;
+var userModel = require('../models/user');
 
 function getGHAuthenticateLink(nonce) {
     return 'https://github.com/login/oauth/authorize'
@@ -16,19 +17,22 @@ function generateNonce(length) {
     return crypto.randomBytes(length * 2).toString("hex").slice(0, length);
 }
 
-function authorize(req) {
+function authorize(code) {
     return githubLogin.authorize({
         client_id: ghConfig.client_id,
         client_secret: ghConfig.client_secret,
-        code: req.query.code
-    }).then(function(body) {
+        code: code
+    }).then(function(authInfo) {
         // Check on access_token and correct scope
-        if (body.access_token && _.difference(body.scope.split(','), ghConfig.scope).length == 0) {
-            // Store access_token to session
-            req.session.access_token = body.access_token;
-            return getCurrentUser(req).then(function(body) {
-                req.session.user = body;
-                return Promise.resolve();
+        var isScopesSame = _.difference(authInfo.scope.split(','), ghConfig.scope).length == 0;
+
+        if (authInfo.access_token && isScopesSame) {
+            return getCurrentUser(authInfo.access_token).then(function(userInfo) {
+                userInfo = JSON.parse(userInfo);
+                // Store access_token and profile to redis
+                userModel.updateAccessToken(userInfo, authInfo.access_token);
+                userModel.updateProfile(userInfo);
+                return Promise.resolve(userInfo);
             });
         } else {
             return Promise.reject();
@@ -36,15 +40,13 @@ function authorize(req) {
     });
 }
 
-function isAuthorized(req) {
-    return req.session.access_token && req.session.user;
+function isAuthorized(user) {
+    return !_.isUndefined(user);
 }
 
-function getCurrentUser(req) {
+function getCurrentUser(access_token) {
     return github.user({
-        access_token: req.session.access_token
-    }).then(function(body) {
-        return Promise.resolve(body);
+        access_token: access_token
     });
 }
 

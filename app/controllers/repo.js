@@ -1,18 +1,23 @@
 var reposService = require('../../services/repos');
+var userModel = require('../../models/user');
 
 module.exports = {
     reposList: function(req, res) {
-        reposService.getUserRepos(req).then(function(repos) {
-            res.render('repo_list.twig', {
-                user: JSON.parse(req.session.user),
-                repos: JSON.parse(repos)
+        userModel.getProfile(req.session.user_id).then(function(user) {
+            reposService.getUserRepos(user).then(function(repos) {
+                res.render('repo_list.twig', {
+                    user: user,
+                    repos: JSON.parse(repos)
+                });
             });
         });
     },
 
     sync: function (req, res) {
-        reposService.getUserRepos(req, true).then(function(repos) {
-            res.redirect('/repos');
+        userModel.getProfile(req.session.user_id).then(function(user) {
+            reposService.getUserRepos(user, {forceUpdate: true}).then(function (repos) {
+                res.redirect('/repos');
+            });
         });
     }
 };
