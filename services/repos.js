@@ -1,7 +1,7 @@
 var github = require('./githubApiClient').baseGHApiClient;
 var Promise = require('bluebird');
 var client = require('../helpers/redisHelper').client;
-var userModel = require('../models/user');
+var users = require('./users');
 var _ = require('lodash');
 
 // Retrieve and return user repos if they doesn't exist
@@ -12,7 +12,7 @@ function getUserRepos(user, params) {
     // TODO: Refactor this
     return client.hexists('user:' + user.id, 'repos').then(function(exists) {
         if (!exists || options.forceUpdate == true) {
-            return userModel.getAccessToken(user).then(function(access_token) {
+            return users.getAccessToken(user).then(function(access_token) {
                 return github.user_repos({
                     access_token: access_token
                 }).then(function(repos) {

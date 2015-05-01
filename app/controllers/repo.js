@@ -1,9 +1,9 @@
 var reposService = require('../../services/repos');
-var userModel = require('../../models/user');
+var users = require('../../services/users');
 
 module.exports = {
     reposList: function(req, res) {
-        userModel.getProfile(req.session.user_id).then(function(user) {
+        users.getProfile(req.session.user_id).then(function(user) {
             reposService.getUserRepos(user).then(function(repos) {
                 res.render('repo_list.twig', {
                     user: user,
@@ -14,7 +14,7 @@ module.exports = {
     },
 
     sync: function (req, res) {
-        userModel.getProfile(req.session.user_id).then(function(user) {
+        users.getProfile(req.session.user_id).then(function(user) {
             reposService.getUserRepos(user, {forceUpdate: true}).then(function (repos) {
                 res.redirect('/repos');
             });

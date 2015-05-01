@@ -4,7 +4,7 @@ var ghConfig = require('../config/github');
 var crypto = require('crypto');
 var loginClient = require('./githubLoginClient');
 var apiClient = require('./githubApiClient');
-var userModel = require('../models/user');
+var users = require('./users');
 
 function getGHAuthenticateLink(nonce) {
     return 'https://github.com/login/oauth/authorize'
@@ -30,8 +30,8 @@ function authorize(code) {
             return getCurrentUser(authInfo.access_token).then(function(userInfo) {
                 userInfo = JSON.parse(userInfo);
                 // Store access_token and profile to redis
-                userModel.updateAccessToken(userInfo, authInfo.access_token);
-                userModel.updateProfile(userInfo);
+                users.updateAccessToken(userInfo, authInfo.access_token);
+                users.updateProfile(userInfo);
                 return Promise.resolve(userInfo);
             });
         } else {
