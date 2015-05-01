@@ -2,8 +2,8 @@ var Promise = require('bluebird');
 var _ = require('lodash');
 var ghConfig = require('../config/github');
 var crypto = require('crypto');
-var githubLogin = require('./githubApiClient').loginGHApiClient;
-var github = require('./githubApiClient').baseGHApiClient;
+var loginClient = require('./githubLoginClient');
+var apiClient = require('./githubApiClient');
 var userModel = require('../models/user');
 
 function getGHAuthenticateLink(nonce) {
@@ -18,7 +18,7 @@ function generateNonce(length) {
 }
 
 function authorize(code) {
-    return githubLogin.authorize({
+    return loginClient.authorize({
         client_id: ghConfig.client_id,
         client_secret: ghConfig.client_secret,
         code: code
@@ -45,7 +45,7 @@ function isAuthorized(user) {
 }
 
 function getCurrentUser(access_token) {
-    return github.user({
+    return apiClient.user({
         access_token: access_token
     });
 }
