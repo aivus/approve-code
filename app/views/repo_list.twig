@@ -14,7 +14,7 @@
                 <tr>
                     <td>{{ repo.full_name }}</td>
                     <td class="text-right">
-                        <input type="checkbox" class="repos">
+                        <input value="{{ repo.id }}" type="checkbox" class="repos">
                     </td>
                 </tr>
                 {% endfor %}
@@ -24,11 +24,6 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script type="text/javascript">
-        $(function() {
-            $(".repos").bootstrapSwitch({
-                size: 'mini'
-            });
-        });
-    </script>
+    {{ parent() }}
+    <script src="js/repo_list.js"></script>
 {% endblock %}

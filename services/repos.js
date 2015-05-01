@@ -12,9 +12,9 @@ function getUserRepos(user, params) {
     // TODO: Refactor this
     return client.hexists('user:' + user.id, 'repos').then(function (exists) {
         if (!exists || options.forceUpdate == true) {
-            return users.getAccessToken(user).then(function (access_token) {
+            return users.getAccessToken(user).then(function (accessToken) {
                 return github.user_repos({
-                    access_token: access_token
+                    access_token: accessToken
                 }).then(function (repos) {
                     var currentTimestamp = Math.floor(new Date().getTime() / 1000);
                     console.log(currentTimestamp);
@@ -27,12 +27,25 @@ function getUserRepos(user, params) {
         } else {
             console.log('retrieve repos from redis');
             return client.hmget('user:' + user.id, 'repos', 'repos_updated_at').then(function (reposData) {
-                return Promise.resolve({repos: reposData[0], updatedAt: reposData[1]});
+                return Promise.resolve({repos: JSON.parse(reposData[0]), updatedAt: +reposData[1]});
             });
         }
     });
 }
 
+function changeRepoState(user, repoId, state) {
+    return getUserRepos(user).then(function(reposData) {
+        var repo = _.find(reposData.repos, {id: repoId});
+        if (!repo) {
+            return Promise.reject();
+        }
+
+        // @todo need implement this
+        return Promise.resolve();
+    });
+}
+
 module.exports = {
-    getUserRepos: getUserRepos
+    getUserRepos: getUserRepos,
+    changeRepoState: changeRepoState
 };

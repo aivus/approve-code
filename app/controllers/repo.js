@@ -1,24 +1,30 @@
 var reposService = require('../../services/repos');
 var users = require('../../services/users');
+var _ = require('lodash');
 
 module.exports = {
-    reposList: function(req, res) {
-        users.getProfile(req.session.user_id).then(function(user) {
-            reposService.getUserRepos(user).then(function(reposData) {
-                res.render('repo_list.twig', {
-                    user: user,
-                    repos: JSON.parse(reposData.repos),
-                    reposUpdatedAt: +reposData.updatedAt
-                });
+    list: function(req, res) {
+        reposService.getUserRepos(req.user).then(function(reposData) {
+            res.render('repo_list.twig', {
+                user: req.user,
+                repos: reposData.repos,
+                reposUpdatedAt: reposData.updatedAt
             });
         });
     },
 
     sync: function (req, res) {
-        users.getProfile(req.session.user_id).then(function(user) {
-            reposService.getUserRepos(user, {forceUpdate: true}).then(function (reposData) {
-                res.redirect('/repos');
-            });
+        reposService.getUserRepos(req.user, {forceUpdate: true}).then(function (reposData) {
+            res.redirect('/repos');
+        });
+    },
+
+    changeState: function changeState(req, res) {
+        reposService.changeRepoState(req.user, +req.params.id, req.params.state).then(function(result) {
+            // @todo need implment this
+            res.sendStatus(200);
+        }).catch(function() {
+            res.status(403).send('Forbidden');
         });
     }
 };

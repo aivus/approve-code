@@ -1,4 +1,6 @@
 var auth = require('../../services/auth');
+var users = require('../../services/users');
+
 
 module.exports = {
 
@@ -34,9 +36,12 @@ module.exports = {
      * @param res
      * @param next
      */
-    checkAuth: function (req, res, next) {
+    checkAuthAndGetUser: function (req, res, next) {
         if (auth.isAuthorized(req.session.user_id)) {
-            return next();
+            return users.getProfile(req.session.user_id).then(function(user){
+                req.user = user;
+                return next();
+            });
         } else {
             res.status(403).send('Forbidden');
         }
