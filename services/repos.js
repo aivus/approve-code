@@ -20,7 +20,7 @@ function getUserRepos(user, params) {
                     console.log(currentTimestamp);
                     return client.hmset('user:' + user.id, 'repos', repos, 'repos_updated_at', currentTimestamp).then(function (result) {
                         console.log('retrieve repos from github');
-                        return Promise.resolve({repos: repos, updatedAt: currentTimestamp});
+                        return Promise.resolve({repos: JSON.parse(repos), updatedAt: currentTimestamp});
                     });
                 });
             });
@@ -33,19 +33,89 @@ function getUserRepos(user, params) {
     });
 }
 
-function changeRepoState(user, repoId, state) {
+function getReposSettingsByUser(user) {
     return getUserRepos(user).then(function(reposData) {
-        var repo = _.find(reposData.repos, {id: repoId});
+        return Promise.reduce(reposData.repos, function(total, repo) {
+            return client.hgetall('repo:' + repo.id).then(function(settings) {
+                if (settings) {
+                    console.log(repo.id, settings);
+                    total[repo.id] = settings;
+                }
+                return total;
+            });
+        }, {});
+    });
+}
+
+function changeRepoState(user, accessToken, repoId, state) {
+    // Force update to prevent changing repository settings without repository on github
+    var repo;
+    return getUserRepos(user, {forceUpdate: true}).then(function(reposData) {
+        repo = _.find(reposData.repos, {id: repoId});
         if (!repo) {
-            return Promise.reject();
+            return Promise.reject('Repository not found');
         }
 
-        // @todo need implement this
+        return client.hmget('repo:' + repoId, 'hookId');
+    }).then(function (redisData) {
+        // Remove webhook if it was set early
+        if (redisData[0]) {
+            return client.hdel('repo:' + repoId, 'hookId').then(function() {
+                return client.hset('repo:' + repoId, 'state', false).then(function() {
+                    console.log('try to remove webhook:', redisData[0]);
+                    return github.removeHook({
+                        owner: repo.owner.login,
+                        repo: repo.name,
+                        hookId: redisData[0]
+                    }, {
+                        headers: {
+                            Authorization: 'token ' + accessToken
+                        }
+                    });
+                })
+            });
+        }
+
+        // If webhook not setted early - continue
         return Promise.resolve();
+    }).then(function(){
+        // Add webhook
+        if (state) {
+            console.log('token', accessToken);
+            return github.createHook({
+                owner: repo.owner.login,
+                repo: repo.name,
+                name: 'web',
+                config: {
+                    // @todo: Move it to config
+                    url: 'http://approve-code.aws.antipenko.pp.ua/webhook',
+                    content_type: 'json',
+                    insecure_ssl: 1
+                },
+                events: [
+                    'pull_request',
+                    'pull_request_review_comment'
+                ],
+                active: 1
+            }, {
+                headers: {
+                    Authorization: 'token ' + accessToken
+                }
+            });
+        }
+
+        return Promise.resolve();
+    }).then(function(webhookData) {
+        if (webhookData) {
+            return client.hmset('repo:' + repoId, 'state', state, 'hookId', webhookData.id);
+        } else {
+            return client.hmset('repo:' + repoId, 'state', state);
+        }
     });
 }
 
 module.exports = {
     getUserRepos: getUserRepos,
-    changeRepoState: changeRepoState
+    changeRepoState: changeRepoState,
+    getReposSettingsByUser: getReposSettingsByUser
 };

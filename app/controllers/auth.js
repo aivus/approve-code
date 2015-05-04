@@ -1,6 +1,7 @@
 var auth = require('../../services/auth');
 var users = require('../../services/users');
-
+var github = require('../../services/githubApiClient');
+var _ = require('lodash');
 
 module.exports = {
 
@@ -40,7 +41,12 @@ module.exports = {
         if (auth.isAuthorized(req.session.user_id)) {
             return users.getProfile(req.session.user_id).then(function(user){
                 req.user = user;
-                return next();
+                return users.getAccessToken(user).then(function(accessToken) {
+                    // @todo: Dirty hack
+                    github.headers = _.extend({}, github.headers, {Authorization: 'token ' + accessToken});
+                    req.accessToken = accessToken;
+                    return next();
+                });
             });
         } else {
             res.status(403).send('Forbidden');

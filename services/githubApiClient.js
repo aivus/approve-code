@@ -7,7 +7,11 @@ var apiClient = new ApiClient({
     // Define api methods
     methods: {
         user: 'get /user',
-        user_repos: 'get /user/repos'
+        // @todo: Rename user_repos to camelCase
+        user_repos: 'get /user/repos',
+        getHook: 'get /repos/{owner}/{repo}/hooks/{hookId}',
+        createHook: 'post /repos/{owner}/{repo}/hooks',
+        removeHook: 'delete /repos/{owner}/{repo}/hooks/{hookId}'
     },
 
     // Github api requires proper user-agent to work

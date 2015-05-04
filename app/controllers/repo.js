@@ -4,11 +4,14 @@ var _ = require('lodash');
 
 module.exports = {
     list: function(req, res) {
-        reposService.getUserRepos(req.user).then(function(reposData) {
-            res.render('repo_list.twig', {
-                user: req.user,
-                repos: reposData.repos,
-                reposUpdatedAt: reposData.updatedAt
+        reposService.getReposSettingsByUser(req.user).then(function(reposSettings) {
+            reposService.getUserRepos(req.user).then(function(reposData) {
+                res.render('repo_list.twig', {
+                    user: req.user,
+                    repos: reposData.repos,
+                    reposUpdatedAt: reposData.updatedAt,
+                    reposSettings: reposSettings
+                });
             });
         });
     },
@@ -20,11 +23,13 @@ module.exports = {
     },
 
     changeState: function changeState(req, res) {
-        reposService.changeRepoState(req.user, +req.params.id, req.params.state).then(function(result) {
-            // @todo need implment this
+        reposService.changeRepoState(req.user, req.accessToken, +req.params.id, req.body.state == 'true').then(function(result) {
+            // @todo need implement this
+            console.log('Success');
             res.sendStatus(200);
         }).catch(function() {
-            res.status(403).send('Forbidden');
+            console.log(arguments);
+            res.status(500).send('Server error');
         });
     }
 };

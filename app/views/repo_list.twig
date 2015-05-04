@@ -14,7 +14,7 @@
                 <tr>
                     <td>{{ repo.full_name }}</td>
                     <td class="text-right">
-                        <input value="{{ repo.id }}" type="checkbox" class="repos">
+                        <input value="{{ repo.id }}" type="checkbox" class="repos" {{ reposSettings[repo.id] is defined and reposSettings[repo.id].state == 'true' ? 'checked="checked"' : '' }}>
                     </td>
                 </tr>
                 {% endfor %}
