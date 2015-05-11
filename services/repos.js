@@ -13,7 +13,7 @@ function getUserRepos(user, params) {
     return client.hexists('user:' + user.id, 'repos').then(function (exists) {
         if (!exists || options.forceUpdate == true) {
             return users.getAccessToken(user).then(function (accessToken) {
-                return github.user_repos({
+                return github.getUserRepos({
                     access_token: accessToken
                 }).then(function (repos) {
                     var currentTimestamp = Math.floor(new Date().getTime() / 1000);

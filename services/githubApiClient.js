@@ -7,8 +7,7 @@ var apiClient = new ApiClient({
     // Define api methods
     methods: {
         user: 'get /user',
-        // @todo: Rename user_repos to camelCase
-        user_repos: 'get /user/repos',
+        getUserRepos: 'get /user/repos',
         getHook: 'get /repos/{owner}/{repo}/hooks/{hookId}',
         createHook: 'post /repos/{owner}/{repo}/hooks',
         removeHook: 'delete /repos/{owner}/{repo}/hooks/{hookId}'
