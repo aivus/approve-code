@@ -14,16 +14,21 @@ function getUserRepos(user, params) {
     return client.hexists('user:' + user.id, 'repos').then(function (exists) {
         if (!exists || options.forceUpdate == true) {
             return users.getAccessToken(user).then(function (accessToken) {
-                return github.getUserRepos({
-                    access_token: accessToken
-                }).then(function (repos) {
-                    var currentTimestamp = Math.floor(new Date().getTime() / 1000);
-                    console.log(currentTimestamp);
-                    return client.hmset('user:' + user.id, 'repos', repos, 'repos_updated_at', currentTimestamp).then(function (result) {
-                        console.log('retrieve repos from github');
-                        return Promise.resolve({repos: JSON.parse(repos), updatedAt: currentTimestamp});
-                    });
-                });
+                var currentTimestamp;
+
+                return github.getUserRepos({ access_token: accessToken })
+                  .then(updateRepoDataInRedis)
+                  .then(returnRepoData);
+
+                function updateRepoDataInRedis (repos) {
+                    currentTimestamp = Math.floor(new Date().getTime() / 1000);
+                    return client.hmset('user:' + user.id, 'repos', repos, 'repos_updated_at', currentTimestamp);
+                }
+
+                function returnRepoData (result) {
+                    console.log('retrieve repos from github');
+                    return Promise.resolve({repos: JSON.parse(repos), updatedAt: currentTimestamp});
+                }
             });
         } else {
             console.log('retrieve repos from redis');
