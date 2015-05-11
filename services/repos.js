@@ -1,3 +1,4 @@
+var ghConfig = require('../config/github');
 var github = require('./githubApiClient');
 var Promise = require('bluebird');
 var client = require('../helpers/redisHelper').client;
@@ -86,12 +87,7 @@ function changeRepoState(user, accessToken, repoId, state) {
                 owner: repo.owner.login,
                 repo: repo.name,
                 name: 'web',
-                config: {
-                    // @todo: Move it to config
-                    url: 'http://approve-code.aws.antipenko.pp.ua/webhook',
-                    content_type: 'json',
-                    insecure_ssl: 1
-                },
+                config: ghConfig.webhookConfig,
                 events: [
                     'pull_request',
                     'pull_request_review_comment'
