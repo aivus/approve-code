@@ -15,14 +15,16 @@ function getUserRepos(user, params) {
         if (!exists || options.forceUpdate == true) {
             return users.getAccessToken(user).then(function (accessToken) {
                 var currentTimestamp;
+                var repos;
 
                 return github.getUserRepos({ access_token: accessToken })
                   .then(updateRepoDataInRedis)
                   .then(returnRepoData);
 
-                function updateRepoDataInRedis (repos) {
+                function updateRepoDataInRedis (redisRepos) {
+                    repos = redisRepos;
                     currentTimestamp = Math.floor(new Date().getTime() / 1000);
-                    return client.hmset('user:' + user.id, 'repos', repos, 'repos_updated_at', currentTimestamp);
+                    return client.hmset('user:' + user.id, 'repos', redisRepos, 'repos_updated_at', currentTimestamp);
                 }
 
                 function returnRepoData (result) {
