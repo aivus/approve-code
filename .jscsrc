@@ -1,0 +1,14 @@
+{
+  "preset": "google",
+  "excludeFiles": [
+    "node_modules/**"
+  ],
+  "validateIndentation": 4,
+  "maximumLineLength": 120,
+  "requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
+  "disallowSpaceAfterObjectKeys": true,
+  "requireSpaceBeforeObjectValues": true,
+  "disallowSpacesInAnonymousFunctionExpression": null,
+  "validateLineBreaks": "LF",
+  "validateParameterSeparator": ", "
+}

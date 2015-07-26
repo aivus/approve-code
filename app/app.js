@@ -1,3 +1,6 @@
+// Configure mongoose connection
+require('../helpers/dbHelper');
+
 var express = require('express');
 var configureRoutes = require('./routes');
 var configureMiddleware = require('./middleware');
