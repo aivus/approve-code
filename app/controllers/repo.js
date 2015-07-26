@@ -1,7 +1,7 @@
 var repo = require('../models/repoModel');
 
 module.exports = {
-    list: function(req, res) {
+    list: function (req, res) {
         res.render('repo_list.twig', {
             user: req.user
         });
@@ -14,10 +14,10 @@ module.exports = {
     },
 
     changeState: function changeState(req, res) {
-        repo.changeRepoState(req.user, +req.params.id, req.body.state == 'true').then(function() {
+        repo.changeRepoState(req.user, +req.params.id, req.body.state == 'true').then(function () {
             // @todo need implement this
             res.sendStatus(200);
-        }).catch(function(error) {
+        }).catch(function (error) {
             console.log(error);
             res.status(500).send('Server error');
         });

@@ -22,7 +22,7 @@ function authorize(code) {
         client_id: ghConfig.client_id,
         client_secret: ghConfig.client_secret,
         code: code
-    }).then(function(authInfo) {
+    }).then(function (authInfo) {
         if (_.has(authInfo, 'error')) {
             return Promise.reject(new Error(authInfo.error));
         }
@@ -31,9 +31,9 @@ function authorize(code) {
         var isScopesSame = _.difference(authInfo.scope.split(','), ghConfig.scope).length == 0;
 
         if (authInfo.access_token && isScopesSame) {
-            return getCurrentUserByApi(authInfo.access_token).then(function(userInfo) {
+            return getCurrentUserByApi(authInfo.access_token).then(function (userInfo) {
                 // Update user info in db
-                return userModel.updateProfile(JSON.parse(userInfo)).then(function(user) {
+                return userModel.updateProfile(JSON.parse(userInfo)).then(function (user) {
                     return userModel.updateAccessToken(user.profile.gid, authInfo.access_token);
                 });
             });

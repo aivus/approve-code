@@ -1,5 +1,5 @@
-$(function(){
-    $(".repos").bootstrapSwitch({
+$(function () {
+    $('.repos').bootstrapSwitch({
         size: 'mini',
         onSwitchChange: onSwitchChange
     });

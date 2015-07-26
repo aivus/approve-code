@@ -9,6 +9,6 @@ var app = express();
 configureMiddleware(app);
 configureRoutes(app);
 
-app.listen(3000, function() {
+app.listen(3000, function () {
     console.log('Started!');
 });
