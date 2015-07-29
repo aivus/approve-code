@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
 var auth = require('../services/auth');
+var authController = require('./controllers/auth');
 var userModel = require('./models/userModel');
 
 module.exports = function (app) {
@@ -37,6 +38,13 @@ module.exports = function (app) {
         }
 
         return userModel.getUser(req.session.user_id).then(function (user) {
+
+            // User not found in db
+            if (!user) {
+                authController.logout(req, res);
+                return;
+            }
+
             req.user = user;
             return next();
         });

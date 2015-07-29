@@ -4,7 +4,7 @@ var _ = require('lodash');
 
 var UserSchema = new mongoose.Schema({
     profile: {
-        gid: Number,
+        id: Number,
         login: String,
         name: String,
         email: String
@@ -16,47 +16,28 @@ var UserSchema = new mongoose.Schema({
 
 var UserModel = mongoose.model('user', UserSchema);
 
-var getProfile = function (gid) {
-    return getUser(gid).then(function (user) {
-        return user ? user.profile : null;
+var updateOrCreateUser = function (userData) {
+    return UserModel.findOne({'profile.id': userData.id}).exec().then(function (user) {
+        return user ? user : createUser(userData);
     });
 };
 
-var updateProfile = function (user) {
-    var newData = {
-        profile: {
-            gid: user.id,
-            login: user.login,
-            name: user.name,
-            email: user.email
-        }
-    };
-
-    return UserModel.findOneAndUpdate({'profile.gid': user.id}, newData, {
-        new: true,
-        upsert: true
-    }).exec();
-};
-
-var getAccessToken = function (gid) {
-    return UserModel.findOne({'profile.gid': gid}).exec().then(function (user) {
-        return user.accessToken;
+var createUser = function (userData) {
+    var user = new UserModel({
+        profile: _.pick(userData, ['id', 'login', 'name', 'email']),
+        accessToken: userData.accessToken
     });
+
+    return user.save();
 };
 
-var updateAccessToken = function (gid, accessToken) {
-    return UserModel.findOneAndUpdate({'profile.gid': gid}, {accessToken: accessToken}, {new: true}).exec();
-};
-
-var getUser = function (gid) {
-    return UserModel.findOne({'profile.gid': gid}).exec();
+var getUser = function (id) {
+    return UserModel.findOne({'profile.id': id}).exec();
 };
 
 module.exports = {
-    getProfile: getProfile,
-    updateProfile: updateProfile,
+    createUser: createUser,
+    updateOrCreateUser: updateOrCreateUser,
     getUser: getUser,
-    getAccessToken: getAccessToken,
-    updateAccessToken: updateAccessToken,
     UserModel: UserModel
 };

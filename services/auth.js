@@ -4,6 +4,7 @@ var crypto = require('crypto');
 var loginClient = require('./githubLoginClient');
 var apiClient = require('./githubApiClient');
 var userModel = require('../app/models/userModel');
+var repoModel = require('../app/models/repoModel');
 var _ = require('lodash');
 
 function getGHAuthenticateLink(nonce) {
@@ -17,13 +18,13 @@ function generateNonce(length) {
     return crypto.randomBytes(length * 2).toString('hex').slice(0, length);
 }
 
-function authorize(code) {
+var authorize = function (code) {
     return loginClient.authorize({
         client_id: ghConfig.client_id,
         client_secret: ghConfig.client_secret,
         code: code
     }).then(function (authInfo) {
-        if (_.has(authInfo, 'error')) {
+        if (authInfo.error) {
             return Promise.reject(new Error(authInfo.error));
         }
 
@@ -33,8 +34,11 @@ function authorize(code) {
         if (authInfo.access_token && isScopesSame) {
             return getCurrentUserByApi(authInfo.access_token).then(function (userInfo) {
                 // Update user info in db
-                return userModel.updateProfile(JSON.parse(userInfo)).then(function (user) {
-                    return userModel.updateAccessToken(user.profile.gid, authInfo.access_token);
+                var newUserData = _.extend({}, JSON.parse(userInfo), {accessToken: authInfo.access_token});
+                return userModel.updateOrCreateUser(newUserData).then(function(user) {
+                    return repoModel.getActualUserRepos(user).then(function (repos) {
+                        return user;
+                    });
                 });
             });
         } else {
@@ -42,7 +46,7 @@ function authorize(code) {
             return Promise.reject();
         }
     });
-}
+};
 
 function getCurrentUserByApi(accessToken) {
     return apiClient.user({

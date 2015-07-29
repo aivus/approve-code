@@ -21,7 +21,7 @@ var callback = function (req, res) {
 
     // Trying to authorize
     auth.authorize(req.query.code).then(function (user) {
-        req.session.user_id = user.profile.gid;
+        req.session.user_id = user.profile.id;
         res.redirect('/');
     }).catch(function () {
         res.redirect('/');

@@ -14,7 +14,7 @@
                 <tr>
                     <td>{{ repo.full_name }}</td>
                     <td class="text-right">
-                        <input value="{{ repo.gid }}" type="checkbox" class="repos" {{ repo.settings is defined and repo.settings.webhookId ? 'checked="checked"' : '' }}>
+                        <input value="{{ repo.id }}" type="checkbox" class="repos" {{ repo.settings is defined and repo.settings.webhookId ? 'checked="checked"' : '' }}>
                     </td>
                 </tr>
                 {% endfor %}

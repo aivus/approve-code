@@ -10,12 +10,12 @@ var PermissionSchema = new mongoose.Schema({
 });
 
 var RepoSchema = new mongoose.Schema({
-    gid: Number,
+    id: Number,
     name: String,
     full_name: String,
     private: Boolean,
     fork: Boolean,
-    permissions: [PermissionSchema],
+    permissions: mongoose.Schema.Types.Mixed,
     settings: {
         webhookId: Number
     }
@@ -34,7 +34,7 @@ function getActualUserRepos(user) {
 function changeRepoState(user, repoId, state) {
     // Force update to prevent changing repository settings without repository on github
     return getActualUserRepos(user).then(function (repos) {
-        var repo = _.find(repos, {gid: repoId});
+        var repo = _.find(repos, {id: repoId});
         if (!repo) {
             return Promise.reject('Repository not found');
         }
@@ -87,35 +87,20 @@ var updateRepos = function (user, reposData) {
     var repos = JSON.parse(reposData);
 
     _.forEach(repos, function (repo) {
-        var permissions = [];
-        _.forEach(repo.permissions, function (value, key) {
-            permissions.push({name: key, value: value});
-        });
+        // List of fields to update
+        var repoFields = ['id', 'name', 'full_name', 'private', 'fork', 'permissions'];
 
         var foundRepo = _.find(user.repos, {'full_name': repo.full_name});
+        var newRepoData = _.pick(repo, repoFields);
 
-        // TODO: Refactor this
         if (foundRepo) {
-            foundRepo.gid = repo.id;
-            foundRepo.name = repo.name;
-            foundRepo.full_name = repo.full_name;
-            foundRepo.private = repo.private;
-            foundRepo.fork = repo.fork;
-            foundRepo.permissions = permissions;
+            _.extend(foundRepo, newRepoData);
         } else {
-            user.repos.push({
-                gid: repo.id,
-                name: repo.name,
-                full_name: repo.full_name,
-                private: repo.private,
-                fork: repo.fork,
-                permissions: permissions
-            });
+            user.repos.push(newRepoData);
         }
     });
 
     user.reposSynced = Math.floor(new Date().getTime() / 1000);
-
     return user.save();
 };
 
@@ -123,6 +108,5 @@ module.exports = {
     RepoSchema: RepoSchema,
     PermissionSchema: PermissionSchema,
     getActualUserRepos: getActualUserRepos,
-    changeRepoState: changeRepoState,
-    updateRepos: updateRepos
+    changeRepoState: changeRepoState
 };

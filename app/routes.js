@@ -1,7 +1,6 @@
 var auth = require('./controllers/auth');
 var index = require('./controllers/index');
 var repo = require('./controllers/repo');
-var _ = require('lodash');
 
 module.exports = function (app) {
     app.get('/', index.index);
@@ -22,7 +21,8 @@ module.exports = function (app) {
  * @param next
  */
 var checkAuthAndGetUser = function (req, res, next) {
-    if (_.has(req, 'user')) {
+    // TODO: Think about move it somewhere
+    if (req.user) {
         return next();
     } else {
         res.status(403).send('Forbidden');
