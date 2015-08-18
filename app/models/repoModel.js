@@ -31,7 +31,7 @@ function getActualUserRepos(user) {
         });
 }
 
-function changeRepoState(user, repoId, state) {
+function changeRepoStatus(user, repoId, state) {
     // Force update to prevent changing repository settings without repository on github
     return getActualUserRepos(user).then(function (repos) {
         var repo = _.find(repos, {id: repoId});
@@ -108,5 +108,5 @@ module.exports = {
     RepoSchema: RepoSchema,
     PermissionSchema: PermissionSchema,
     getActualUserRepos: getActualUserRepos,
-    changeRepoState: changeRepoState
+    changeRepoStatus: changeRepoStatus
 };

@@ -8,7 +8,6 @@ var authController = require('./controllers/auth');
 var userModel = require('./models/userModel');
 
 module.exports = function (app) {
-
     app.use(bodyParser.json());         // to support JSON-encoded bodies
     app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
         extended: true
@@ -50,6 +49,24 @@ module.exports = function (app) {
         });
     });
 
+    // Show /repos only for authorized users
+    app.use('/repos', checkAuthAndGetUser);
+
     app.set('views', path.resolve(__dirname, 'views'));
     app.set('view engine', 'twig');
+};
+
+/**
+ * Middleware for check user authenticate
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
+var checkAuthAndGetUser = function (req, res, next) {
+    if (req.user) {
+        return next();
+    } else {
+        res.status(403).send('Forbidden');
+    }
 };

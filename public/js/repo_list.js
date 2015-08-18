@@ -1,10 +1,10 @@
 $(function () {
     $('.repos').bootstrapSwitch({
         size: 'mini',
-        onSwitchChange: onSwitchChange
+        onSwitchChange: toggleRepoState
     });
 
-    function onSwitchChange(event, state) {
-        $.post('/repos/' + this.value + '/state', {state: state});
+    function toggleRepoState(event, state) {
+        $.post('/repos/' + this.value + '/' + (state ? 'enable' : 'disable'));
     }
 });
