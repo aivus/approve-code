@@ -5,6 +5,6 @@ $(function () {
     });
 
     function toggleRepoState(event, state) {
-        $.post('/repos/' + this.value + '/' + (state ? 'enable' : 'disable'));
+        $.post('/repos/' + this.value + '/process/' + (state ? 'enable' : 'disable'));
     }
 });
