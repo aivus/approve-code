@@ -3,18 +3,18 @@
     <div class="row">
         <div class="col col-md-8 col-md-offset-2">
             <div class="pull-right margin-bottom-10">
-                Last updated at {{ reposUpdatedAt|date('d/m/Y H:i:s') }}
+                Last updated at {{ user.reposSynced|date('d/m/Y H:i:s') }}
                 <a href="/repos/sync" class="btn btn-default btn-sm btn-success">
                     <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Sync
                 </a>
             </div>
 
             <table class="table table-striped table-hover">
-                {% for repo in repos %}
+                {% for repo in user.repos %}
                 <tr>
                     <td>{{ repo.full_name }}</td>
                     <td class="text-right">
-                        <input value="{{ repo.id }}" type="checkbox" class="repos" {{ reposSettings[repo.id] is defined and reposSettings[repo.id].state == 'true' ? 'checked="checked"' : '' }}>
+                        <input value="{{ repo.id }}" type="checkbox" class="repos" {{ repo.settings is defined and repo.settings.webhookId ? 'checked="checked"' : '' }}>
                     </td>
                 </tr>
                 {% endfor %}

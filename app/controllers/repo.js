@@ -1,35 +1,46 @@
-var reposService = require('../../services/repos');
-var users = require('../../services/users');
-var _ = require('lodash');
+var repo = require('../models/repoModel');
+
+var list = function (req, res) {
+    res.render('repo_list.twig', {
+        user: req.user
+    });
+};
+
+var sync = function (req, res) {
+    repo.getActualUserRepos(req.user).then(function (repos) {
+        res.redirect('/repos');
+    });
+};
+
+/**
+ * Change repository process status
+ *
+ * @param res
+ * @param {Object} user
+ * @param {int} id
+ * @param {boolean} status
+ */
+var changeRepoProcessStatus = function (res, user, id, status) {
+    repo.changeRepoStatus(user, id, status).then(function () {
+        // @todo need implement this
+        res.sendStatus(200);
+    }).catch(function (error) {
+        console.log(error);
+        res.status(500).send('Server error');
+    });
+};
+
+var enableProcess = function (req, res) {
+    changeRepoProcessStatus(res, req.user, +req.params.id, true);
+};
+
+var disableProcess = function (req, res) {
+    changeRepoProcessStatus(res, req.user, +req.params.id, true);
+};
 
 module.exports = {
-    list: function(req, res) {
-        reposService.getReposSettingsByUser(req.user).then(function(reposSettings) {
-            reposService.getUserRepos(req.user).then(function(reposData) {
-                res.render('repo_list.twig', {
-                    user: req.user,
-                    repos: reposData.repos,
-                    reposUpdatedAt: reposData.updatedAt,
-                    reposSettings: reposSettings
-                });
-            });
-        });
-    },
-
-    sync: function (req, res) {
-        reposService.getUserRepos(req.user, {forceUpdate: true}).then(function (reposData) {
-            res.redirect('/repos');
-        });
-    },
-
-    changeState: function changeState(req, res) {
-        reposService.changeRepoState(req.user, req.accessToken, +req.params.id, req.body.state == 'true').then(function(result) {
-            // @todo need implement this
-            console.log('Success');
-            res.sendStatus(200);
-        }).catch(function() {
-            console.log(arguments);
-            res.status(500).send('Server error');
-        });
-    }
+    list: list,
+    sync: sync,
+    enableProcess: enableProcess,
+    disableProcess: disableProcess
 };

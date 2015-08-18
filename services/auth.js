@@ -1,58 +1,61 @@
 var Promise = require('bluebird');
-var _ = require('lodash');
 var ghConfig = require('../config/github');
 var crypto = require('crypto');
 var loginClient = require('./githubLoginClient');
 var apiClient = require('./githubApiClient');
-var users = require('./users');
+var userModel = require('../app/models/userModel');
+var repoModel = require('../app/models/repoModel');
+var _ = require('lodash');
 
 function getGHAuthenticateLink(nonce) {
-    return 'https://github.com/login/oauth/authorize'
-        + '?client_id=' + ghConfig.client_id
-        + '&scope=' + ghConfig.scope.join()
-        + '&state=' + nonce;
+    return 'https://github.com/login/oauth/authorize' +
+        '?client_id=' + ghConfig.client_id +
+        '&scope=' + ghConfig.scope.join() +
+        '&state=' + nonce;
 }
 
 function generateNonce(length) {
-    return crypto.randomBytes(length * 2).toString("hex").slice(0, length);
+    return crypto.randomBytes(length * 2).toString('hex').slice(0, length);
 }
 
-function authorize(code) {
+var authorize = function (code) {
     return loginClient.authorize({
         client_id: ghConfig.client_id,
         client_secret: ghConfig.client_secret,
         code: code
-    }).then(function(authInfo) {
+    }).then(function (authInfo) {
+        if (authInfo.error) {
+            return Promise.reject(new Error(authInfo.error));
+        }
+
         // Check on access_token and correct scope
         var isScopesSame = _.difference(authInfo.scope.split(','), ghConfig.scope).length == 0;
 
         if (authInfo.access_token && isScopesSame) {
-            return getCurrentUser(authInfo.access_token).then(function(userInfo) {
-                userInfo = JSON.parse(userInfo);
-                // Store access_token and profile to redis
-                users.updateAccessToken(userInfo, authInfo.access_token);
-                users.updateProfile(userInfo);
-                return Promise.resolve(userInfo);
+            return getCurrentUserByApi(authInfo.access_token).then(function (userInfo) {
+                // Update user info in db
+                var newUserData = _.extend({}, JSON.parse(userInfo), {accessToken: authInfo.access_token});
+                return userModel.updateOrCreateUser(newUserData).then(function(user) {
+                    return repoModel.getActualUserRepos(user).then(function (repos) {
+                        return user;
+                    });
+                });
             });
         } else {
+            // @todo: Add error code
             return Promise.reject();
         }
     });
-}
+};
 
-function isAuthorized(user) {
-    return !_.isUndefined(user);
-}
-
-function getCurrentUser(access_token) {
+function getCurrentUserByApi(accessToken) {
     return apiClient.user({
-        access_token: access_token
+        access_token: accessToken
     });
 }
 
 module.exports = {
     generateNonce: generateNonce,
     getGHAuthenticateLink: getGHAuthenticateLink,
-    authorize: authorize,
-    isAuthorized: isAuthorized
+    authorize: authorize
 };
