@@ -86,6 +86,11 @@ function changeRepoStatus(user, repoId, state) {
 var updateRepos = function (user, reposData) {
     var repos = JSON.parse(reposData);
 
+    // Remove old repos from our db
+    user.repos = _.select(user.repos, function (item) {
+        return _.findWhere(repos, {'full_name': item.full_name})
+    });
+
     _.forEach(repos, function (repo) {
         // List of fields to update
         var repoFields = ['id', 'name', 'full_name', 'private', 'fork', 'permissions'];
